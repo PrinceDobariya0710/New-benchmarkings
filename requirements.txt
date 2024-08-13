@@ -1,0 +1,13 @@
+fastapi[standard]
+asyncpg
+SQLAlchemy
+# uvloop
+httptools
+gunicorn
+Jinja2
+ujson
+orjson
+Django
+flask
+psycopg2-binary
+pony
