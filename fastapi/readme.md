@@ -1,0 +1,1 @@
+gunicorn app-orm:app -k uvicorn.workers.UvicornWorker --worker=2 --bind 0.0.0.0:8080

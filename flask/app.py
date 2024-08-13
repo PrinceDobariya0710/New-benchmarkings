@@ -171,7 +171,7 @@ def get_random_world_single_raw():
     return jsonify(world)
 
 
-@app.route("/query")
+@app.route("/dbs")
 def get_random_world():
     with orm.db_session(serializable=False):
         worlds = [World[ident].to_dict() for ident in generate_ids(get_num_queries())]

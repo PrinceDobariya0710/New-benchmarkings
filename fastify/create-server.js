@@ -88,7 +88,7 @@ if (database) {
   }
 
   fastify.get("/db", singleQuerySchema, routerHandler.singleQuery);
-  fastify.get("/queries", multipleQueriesSchema, routerHandler.multipleQueries);
+  fastify.get("/dbs", multipleQueriesSchema, routerHandler.multipleQueries);
   fastify.get("/fortunes", routerHandler.fortunes);
   fastify.get("/updates", updateSchema, routerHandler.updates);
 }

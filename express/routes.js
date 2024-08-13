@@ -60,7 +60,7 @@ module.exports = (app, resolvers) => {
         await graphql(req, res);
     });
     
-    app.get('/queries', async (req, res) => {
+    app.get('/dbs', async (req, res) => {
         
         const graphql = await graphqlHTTP((req, res, graphQLParams) => {
             

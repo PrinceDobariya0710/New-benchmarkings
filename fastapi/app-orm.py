@@ -61,7 +61,7 @@ async def setup_database():
         future=True,
         pool_size=MAX_POOL_SIZE,
         connect_args={
-            "ssl": False  # NEEDED FOR NGINX-UNIT OTHERWISE IT FAILS
+            # "ssl": False  # NEEDED FOR NGINX-UNIT OTHERWISE IT FAILS
         },
     )
     return sessionmaker(engine, class_=AsyncSession)
@@ -107,7 +107,7 @@ async def single_database_query():
     return UJSONResponse(result.__json__())
 
 
-@app.get("/queries")
+@app.get("/dbs")
 async def multiple_database_queries(queries=None):
     num_queries = get_num_queries(queries)
     data = []

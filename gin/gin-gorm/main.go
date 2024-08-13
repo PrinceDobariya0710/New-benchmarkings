@@ -129,7 +129,7 @@ func main() {
 	}
 
 	// MULTIPLE QUERIES
-	r.GET("/queries", func(c *gin.Context) {
+	r.GET("/dbs", func(c *gin.Context) {
 		var numOf NumOf
 
 		if c.ShouldBindQuery(&numOf) != nil { // manage missing query num
