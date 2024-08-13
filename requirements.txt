@@ -1,7 +1,7 @@
 fastapi[standard]
 asyncpg
 SQLAlchemy
-# uvloop
+uvloop
 httptools
 gunicorn
 Jinja2
@@ -11,3 +11,4 @@ Django
 flask
 psycopg2-binary
 pony
+cython
