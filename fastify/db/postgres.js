@@ -11,7 +11,11 @@ const knex = require("knex")({
     host: db_host,
     user: db_user,
     password: db_pass,
-    database: db_name
+    database: db_name,
+    ssl: {
+      require: true,
+      rejectUnauthorized: false
+    }
   }
 });
 
