@@ -39,3 +39,7 @@ http://localhost:8080/db
 ### Variable Row Query Test 
 
 http://localhost:8080/query?queries=2
+
+gunicorn --pid=gunicorn.pid app:app -b 0.0.0.0:8080 -w 2
+
+gunicorn --worker-class gevent --workers 2 --bind 0.0.0.0:5000 app:app

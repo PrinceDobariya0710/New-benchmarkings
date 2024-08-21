@@ -1,6 +1,7 @@
 import subprocess
 import json
 import os
+import re
 
 def run_wrk(url, duration='30s', threads=2, connections=10):
     """
@@ -32,33 +33,60 @@ def run_wrk(url, duration='30s', threads=2, connections=10):
     
     return parsed_data
 
-def parse_wrk_output(output):
-    """
-    Parse the output from wrk into a dictionary format.
-
-    Args:
-        output (str): The output from wrk command.
-
-    Returns:
-        dict: Parsed output with relevant data.
-    """
-    lines = output.splitlines()
-    data = {}
+def parse_wrk_output(text):
     
-    for line in lines:
-        if 'Requests/sec:' in line:
-            data['requests_per_sec'] = float(line.split(': ')[1].strip())
-        elif 'Latency' in line:
-            data['latency'] = line.split(': ')[1].strip()
-        elif 'Socket errors' in line:
-            errors = line.split(': ')[1].strip().split(', ')
-            for error in errors:
-                key, value = error.split(' ')
-                data[key.lower() + '_errors'] = int(value)
-        elif 'Transfer/sec:' in line:
-            data['transfer_per_sec'] = line.split(': ')[1].strip()
+    result = {}
+
+    # Extracting the URL and test duration
+    url_match = re.search(r'@ (http[^\s]+)', text)
+    duration_match = re.search(r'Running (\d+)s test', text)
     
-    return data
+    if url_match and duration_match:
+        result['url'] = url_match.group(1)
+        result['duration'] = int(duration_match.group(1))
+
+    # Extracting thread and connection details
+    threads_connections_match = re.search(r'(\d+) threads and (\d+) connections', text)
+    if threads_connections_match:
+        result['threads'] = int(threads_connections_match.group(1))
+        result['connections'] = int(threads_connections_match.group(2))
+    
+    # Extracting latency details
+    latency_match = re.search(r'Latency\s+([\d.]+ms)\s+([\d.]+us)\s+([\d.]+ms)', text)
+    if latency_match:
+        result['latency'] = {
+            'avg': latency_match.group(1),
+            'stdev': latency_match.group(2),
+            'max': latency_match.group(3)
+        }
+    
+    # Extracting Req/Sec details
+    req_sec_match = re.search(r'Req/Sec\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)', text)
+    if req_sec_match:
+        result['req_per_sec'] = {
+            'avg': req_sec_match.group(1),
+            'stdev': req_sec_match.group(2),
+            'max': req_sec_match.group(3)
+        }
+
+    # Extracting request and data transfer details
+    requests_match = re.search(r'(\d+) requests in ([\d.]+)s, ([\d.]+MB) read', text)
+    if requests_match:
+        result['total_requests'] = int(requests_match.group(1))
+        result['total_duration'] = float(requests_match.group(2))
+        result['data_read'] = requests_match.group(3)
+
+    # Extracting requests/sec and transfer/sec details
+    req_sec_final_match = re.search(r'Requests/sec:\s+([\d.]+)', text)
+    transfer_sec_match = re.search(r'Transfer/sec:\s+([\d.]+KB)', text)
+    
+    if req_sec_final_match:
+        result['requests_per_sec'] = float(req_sec_final_match.group(1))
+    
+    if transfer_sec_match:
+        result['transfer_per_sec'] = transfer_sec_match.group(1)
+    
+    return result
 
 def run_benchmark(frameworks, endpoints, duration='30s', threads=2, connections=10, output_dir='results'):
     """
@@ -94,16 +122,32 @@ def run_benchmark(frameworks, endpoints, duration='30s', threads=2, connections=
 
 # Example usage
 if __name__ == '__main__':
-    frameworks = {
-        'fastapi': 'http://localhost:8000',
-        'django': 'http://localhost:8001',
-        'flask': 'http://localhost:8002',
-        'express': 'http://localhost:8003'
-    }
     
+    print("Enter Base URLs example : http://localhost:8000 ")
+    django_base_url = input("Please enter url for django \n")
+    fastapi_base_url = input("Please enter url for fastapi \n")
+    flask_base_url = input("Please enter url for flask \n")
+    express_base_url = input("Please enter url for express \n")
+    fastify_base_url = input("Please enter url for fastify \n")
+    gin_gorm_base_url = input("Please enter url for gin-gorm \n")
+
+    frameworks = {
+        'django': django_base_url,
+        'fastapi': fastapi_base_url,
+        'flask': flask_base_url,
+        'express': express_base_url,
+        'fastify': fastify_base_url,
+        'gin': gin_gorm_base_url,
+    }
+
+    queries = input("Enter Queries you want to make for multiple queries and updates \n")
     endpoints = [
-        'api/v1/resource',
-        'api/v1/another-resource',
+        'json',
+        'plaintext',
+        'fortunes',
+        'db',
+        f'dbs?queries={queries}',
+        f'updates?queries={queries}',
     ]
     
-    run_benchmark(frameworks, endpoints, duration='30s', threads=4, connections=20)
+    run_benchmark(frameworks, endpoints, duration='30s', threads=2, connections=10)

@@ -7,5 +7,5 @@ urlpatterns = [
     url(r'^db$', db),
     url(r'^dbs$', dbs),
     url(r'^fortunes$', fortunes),
-    url(r'^update$', update),
+    url(r'^updates$', update),
 ]

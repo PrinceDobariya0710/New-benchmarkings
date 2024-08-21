@@ -28,3 +28,5 @@ the [Python README](../).
 ### Resources
 
 * [Writing your first Django app](https://docs.djangoproject.com/en/dev/intro/tutorial01/)
+
+gunicorn --pid=gunicorn.pid hello.wsgi:application -b 0.0.0.0:8080 -w 2

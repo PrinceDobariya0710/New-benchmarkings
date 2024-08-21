@@ -10,6 +10,6 @@ orjson
 Django==3.2.25
 flask
 psycopg2-binary
-pony
 cython
-meinheld
+flask_sqlalchemy
+gunicorn[gevent]
