@@ -131,14 +131,20 @@ if __name__ == '__main__':
     fastify_base_url = input("Please enter url for fastify \n")
     gin_gorm_base_url = input("Please enter url for gin-gorm \n")
 
-    frameworks = {
-        'django': django_base_url,
-        'fastapi': fastapi_base_url,
-        'flask': flask_base_url,
-        'express': express_base_url,
-        'fastify': fastify_base_url,
-        'gin': gin_gorm_base_url,
-    }
+    frameworks = {}
+
+    if django_base_url:
+        frameworks["django"] = django_base_url
+    if fastapi_base_url:
+        frameworks['fastapi'] = fastapi_base_url
+    if flask_base_url:
+        frameworks['flask'] = flask_base_url
+    if express_base_url:
+        frameworks['express'] = express_base_url
+    if fastify_base_url:
+        frameworks['fastify'] = fastify_base_url
+    if gin_gorm_base_url:
+        frameworks['gin'] = gin_gorm_base_url
 
     queries = input("Enter Queries you want to make for multiple queries and updates \n")
     endpoints = [

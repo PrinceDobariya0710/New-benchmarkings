@@ -4,32 +4,28 @@ import (
 	"fmt"
 	"math/rand"
 	"net/http"
-	"time"
 	"os"
+	"time"
+
 	"github.com/gin-gonic/gin"
-	postgres "gorm.io/driver/postgres"
+	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 )
 
-// World represents an entry int the World table
+// World represents an entry in the World table
 type World struct {
 	ID           int64 `json:"id"`
 	RandomNumber int64 `json:"randomNumber" gorm:"column:randomnumber"`
 }
 
-// Override GORM convention for table mapping
-// TableName overrides the table name used by User to `profiles`
+// TableName overrides the table name used by World to `World`
 func (World) TableName() string {
 	return "World"
 }
 
-// implements the basic logic behind the query tests
+// getWorld implements the logic behind the query tests
 func getWorld(db *gorm.DB) World {
-	//we could actually precompute a list of random
-	//numbers and slice them but this makes no sense
-	//as I expect that this 'random' is just a placeholder
-	//for an actual business logic
 	randomId := rand.Intn(10000) + 1
 
 	var world World
@@ -38,12 +34,8 @@ func getWorld(db *gorm.DB) World {
 	return world
 }
 
-// implements the logic behind the updates tests
+// processWorld implements the logic behind the updates tests
 func processWorld(tx *gorm.DB) (World, error) {
-	//we could actually precompute a list of random
-	//numbers and slice them but this makes no sense
-	//as I expect that this 'random' is just a placeholder
-	//for an actual business logic in a real test
 	randomId := rand.Intn(10000) + 1
 	randomId2 := int64(rand.Intn(10000) + 1)
 
@@ -57,27 +49,28 @@ func processWorld(tx *gorm.DB) (World, error) {
 }
 
 func main() {
-	/* SETUP DB AND WEB SERVER */
+	// Setup DB and Web Server
 	dbname := os.Getenv("PGDB")
 	if dbname == "" {
-		dbname = "benchmark_db" // Default port if not specified
+		dbname = "benchmark_db"
 	}
 	dbuser := os.Getenv("PGUSER")
 	if dbuser == "" {
-		dbuser = "postgres" // Default port if not specified
+		dbuser = "postgres"
 	}
 	dbpass := os.Getenv("PGPASS")
 	if dbpass == "" {
-		dbpass = "root" // Default port if not specified
+		dbpass = "root"
 	}
 	dbhost := os.Getenv("PGHOST")
 	if dbhost == "" {
-		dbhost = "localhost" // Default port if not specified
+		dbhost = "localhost"
 	}
-	dsn := "host="+dbhost +" user="+dbuser + " password="+dbpass + " dbname="+dbname + " port=5432 " + "sslmode=disable"
+
+	dsn := "host=" + dbhost + " user=" + dbuser + " password=" + dbpass + " dbname=" + dbname + " port=5432 " + "sslmode=require"
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
-		PrepareStmt: true,                                  // use prep statements
-		Logger:      logger.Default.LogMode(logger.Silent), // new, not inserted in original submission 2x on query
+		PrepareStmt: true,
+		Logger:      logger.Default.LogMode(logger.Silent),
 	})
 
 	if err != nil {
@@ -92,35 +85,28 @@ func main() {
 	// SetMaxIdleConns sets the maximum number of connections in the idle connection pool.
 	sqlDB.SetMaxIdleConns(500)
 
-	//r := gin.Default() // use default middleware - original submission
-	r := gin.New() // use no middleware, causes 1.83x on plaintext (pure gin still at +14% on both plaintext and json)
+	// Gin setup
+	r := gin.New()
 
-	// setup middleware to add server header
-	// this slows things a little bit but it is the best design decision
+	// Setup middleware to add server header
 	serverHeader := []string{"Gin-gorm"}
 	r.Use(func(c *gin.Context) {
 		c.Writer.Header()["Server"] = serverHeader
 	})
 
-	/* START TESTS */
-
-	// JSON TEST
+	// JSON Test
 	r.GET("/json", func(c *gin.Context) {
-		//c.Header("Server", "example") - original submission now using middleware
 		c.JSON(200, gin.H{"message": "Hello, World!"})
 	})
 
-	// PLAINTEXT TEST
+	// Plaintext Test
 	r.GET("/plaintext", func(c *gin.Context) {
-		//c.Header("Server", "example") - original submission now using middleware
 		c.String(200, "Hello, World!")
 	})
 
-	// SINGLE QUERY
+	// Single Query
 	r.GET("/db", func(c *gin.Context) {
 		world := getWorld(db)
-
-		//c.Header("Server", "example") - original submission now using middleware
 		c.JSON(200, world)
 	})
 
@@ -128,23 +114,19 @@ func main() {
 		Queries int `form:"queries"`
 	}
 
-	// MULTIPLE QUERIES
+	// Multiple Queries
 	r.GET("/dbs", func(c *gin.Context) {
 		var numOf NumOf
 
-		if c.ShouldBindQuery(&numOf) != nil { // manage missing query num
+		if c.ShouldBindQuery(&numOf) != nil {
 			numOf.Queries = 1
-
-		} else if numOf.Queries < 1 { //set at least 1
+		} else if numOf.Queries < 1 {
 			numOf.Queries = 1
-
-		} else if numOf.Queries > 500 { //set no more than 500
+		} else if numOf.Queries > 500 {
 			numOf.Queries = 500
 		}
 
-		worlds := make([]World, numOf.Queries, numOf.Queries) //prealloc
-
-		//original submission with go routines, seems faster then without...
+		worlds := make([]World, numOf.Queries)
 		channel := make(chan World, numOf.Queries)
 
 		for i := 0; i < numOf.Queries; i++ {
@@ -155,50 +137,43 @@ func main() {
 			worlds[i] = <-channel
 		}
 
-		//c.Header("Server", "example") - original submission now using middleware
 		c.JSON(200, worlds)
 	})
 
-	// MULTIPLE UPDATES
+	// Multiple Updates
 	r.GET("/updates", func(c *gin.Context) {
 		var numOf NumOf
 
-		if c.ShouldBindQuery(&numOf) != nil { // manage missing query num
+		if c.ShouldBindQuery(&numOf) != nil {
 			numOf.Queries = 1
-
-		} else if numOf.Queries < 1 { //set at least 1
+		} else if numOf.Queries < 1 {
 			numOf.Queries = 1
-
-		} else if numOf.Queries > 500 { //set no more than 500
+		} else if numOf.Queries > 500 {
 			numOf.Queries = 500
 		}
 
-		worlds := make([]World, numOf.Queries, numOf.Queries) //prealloc
-		var err error = nil
-
-		//c.Header("Server", "example") - original submission now using middleware
+		worlds := make([]World, numOf.Queries)
+		var err error
 
 		for i := 0; i < numOf.Queries; i++ {
 			worlds[i], err = processWorld(db)
-
 			if err != nil {
 				fmt.Println(err)
 				c.JSON(500, gin.H{"error": err})
-				break
+				return
 			}
 		}
 
 		c.JSON(200, worlds)
 	})
 
-	/* START SERVICE */
-
+	// Start service
 	s := &http.Server{
 		Addr:         ":8080",
 		Handler:      r,
-		ReadTimeout:  100000 * time.Second, //increase keepalive
+		ReadTimeout:  100000 * time.Second,
 		WriteTimeout: 100000 * time.Second,
 	}
 
-	s.ListenAndServe() // listen and serve on 0.0.0.0:8080
+	s.ListenAndServe()
 }
