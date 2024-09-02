@@ -68,8 +68,6 @@ coverage/
 /cache/
 .idea/
 .env
-*.mod
-*.sum
 *.db
 *.swp
 *.log
