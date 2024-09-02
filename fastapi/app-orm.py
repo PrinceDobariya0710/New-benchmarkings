@@ -19,6 +19,9 @@ logger = logging.getLogger(__name__)
 
 Base = declarative_base()
 
+import asyncio
+import uvloop
+asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
 
 class World(Base):
     __tablename__ = "world"

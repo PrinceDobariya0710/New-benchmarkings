@@ -70,15 +70,15 @@ def parse_wrk_output(text):
         }
 
     # Extracting request and data transfer details
-    requests_match = re.search(r'(\d+) requests in ([\d.]+)s, ([\d.]+MB) read', text)
+    requests_match = re.search(r'(\d+) requests in ([\d.]+)s, ([\d.]+)(KB|MB) read', text)
     if requests_match:
         result['total_requests'] = int(requests_match.group(1))
         result['total_duration'] = float(requests_match.group(2))
-        result['data_read'] = requests_match.group(3)
+        result['data_read'] = f"{requests_match.group(3)}{requests_match.group(4)}"
 
     # Extracting requests/sec and transfer/sec details
     req_sec_final_match = re.search(r'Requests/sec:\s+([\d.]+)', text)
-    transfer_sec_match = re.search(r'Transfer/sec:\s+([\d.]+KB)', text)
+    transfer_sec_match = re.search(r'Transfer/sec:\s+([\d.]+KB|MB)', text)
     
     if req_sec_final_match:
         result['requests_per_sec'] = float(req_sec_final_match.group(1))

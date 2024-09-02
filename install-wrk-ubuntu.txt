@@ -4,3 +4,6 @@ cd wrk
 sudo make 
 # move the executable to somewhere in your PATH, ex: 
 sudo cp wrk /usr/local/bin
+
+
+git clone https://github.com/PrinceDobariya0710/New-benchmarkings.git code

@@ -1,6 +1,0 @@
-http://127.0.0.1:8000/dbs?queries=10
-http://127.0.0.1:8000/db?queries=10
-http://127.0.0.1:8000/plaintext
-http://127.0.0.1:8000/json
-http://127.0.0.1:8000/fortunes
-http://127.0.0.1:8000/updates?queries=10

@@ -77,6 +77,3 @@ coverage/
 # Dependency directories
 vendor/
 
-# Go Modules
-/go.sum
-/go.mod
