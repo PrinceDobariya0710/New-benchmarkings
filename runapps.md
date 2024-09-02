@@ -22,4 +22,5 @@
 >> node app.js
 
 ## gin-gorm
+>> cd gin/gin-gorm
 >> go run main.go
